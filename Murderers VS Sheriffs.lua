@@ -1,13 +1,13 @@
 --[[
     PuckAFK Hub · DUELS
-    Aim + ESP v1.0.12 · Manual Only
+    Aim + ESP v1.0.13 · Manual Only
 
     Auto-execute has been removed completely.
     Execute this file manually each time you enter a DUELS place/server.
     The first run also disables remnants left by older auto-execute builds.
 ]]
 
-print("[PuckAFK DUELS] v1.0.12 manual build starting...")
+print("[PuckAFK DUELS] v1.0.13 manual build starting...")
 
 
 local compiler = loadstring or load
@@ -1186,7 +1186,6 @@ end
 
 local CombatTab = Window:CreateTab("Combat")
 local LegitTab = Window:CreateTab("Legit")
-local RageTab = Window:CreateTab("Rage")
 local VisualTab = Window:CreateTab("Visuals")
 local SettingsTab = Window:CreateTab("Settings")
 local UIControls = {}
@@ -1416,31 +1415,6 @@ LegitTab:CreateButton({Name = "Legit • Strong", Callback = function()
     }, "Hold RMB • 180px FOV • strong response")
 end})
 
-RageTab:CreateSection("Rage Aim")
-RageTab:CreateParagraph({
-    Title = "Rage mode",
-    Content = "Aggressive target acquisition with larger FOV and faster response. Max can ignore wall checks.",
-    Height = 68,
-})
-RageTab:CreateButton({Name = "Rage • Visible", Callback = function()
-    applyPreset("Rage • Visible", {
-        Enabled=true, HoldRMB=false, VisibleCheck=true, AimPoint="Head", Prediction=true,
-        PredictionTime=0.08, PredictionSmoothing=0.62, MaxPredictionOffset=16,
-        SwitchThreshold=0.07, LockGrace=0.14, AdaptiveSmoothing=false, MicroSnapRadius=4,
-        TargetPriority="Crosshair", SwitchDelay=0, FOV=500, SmoothSpeed=92,
-        MaxDistance=1000, StickyTarget=true, StickyMultiplier=1.45, ShowFOV=true,
-    }, "Always On • 500px FOV • visible targets only")
-end})
-RageTab:CreateButton({Name = "Rage • Max", Callback = function()
-    applyPreset("Rage • Max", {
-        Enabled=true, HoldRMB=false, VisibleCheck=false, AimPoint="Closest Part", Prediction=true,
-        PredictionTime=0.10, PredictionSmoothing=0.55, MaxPredictionOffset=18,
-        SwitchThreshold=0.03, LockGrace=0.12, AdaptiveSmoothing=false, MicroSnapRadius=8,
-        TargetPriority="Crosshair", SwitchDelay=0, FOV=600, SmoothSpeed=120,
-        MaxDistance=1500, StickyTarget=true, StickyMultiplier=1.60, ShowFOV=true,
-    }, "Always On • maximum FOV / response • ignores walls")
-end})
-
 VisualTab:CreateSection("ESP")
 UIControls.ESPEnabled = VisualTab:CreateToggle({Name="Enable ESP", CurrentValue=Config.ESP.Enabled, Callback=function(v) Config.ESP.Enabled=v==true end})
 UIControls.Boxes = VisualTab:CreateToggle({Name="Boxes", CurrentValue=Config.ESP.Boxes, Callback=function(v) Config.ESP.Boxes=v==true end})
@@ -1592,8 +1566,8 @@ end)
 
 PuckUI:Notify({
     Title = "PuckAFK · DUELS",
-    Content = "Loaded " .. placeInfo.Name .. " • v1.0.12 manual only",
+    Content = "Loaded " .. placeInfo.Name .. " • v1.0.13 manual only",
     Duration = 3,
 })
 
-print("[PuckAFK DUELS] v1.0.12 loaded successfully — auto-execute disabled")
+print("[PuckAFK DUELS] v1.0.13 loaded successfully — auto-execute disabled")
