@@ -1,13 +1,15 @@
 --[[
     PuckAFK Hub · DUELS
-    Aim + ESP v1.0.13 · Manual Only
+    Aim + ESP v1.0.14 · Manual Only + Subplace Support
 
     Auto-execute has been removed completely.
     Execute this file manually each time you enter a DUELS place/server.
+    Supports the full Murderers VS Sheriffs universe: root, 1v1, 2v2, 3v3,
+    4v4, FFA, Pro Servers, plus future subplaces that retain DUELS state.
     The first run also disables remnants left by older auto-execute builds.
 ]]
 
-print("[PuckAFK DUELS] v1.0.13 manual build starting...")
+print("[PuckAFK DUELS] v1.0.14 manual subplace build starting...")
 
 
 local compiler = loadstring or load
@@ -73,11 +75,34 @@ local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local Camera = workspace.CurrentCamera
 
+local DUELS_UNIVERSE_ID = 7219654364
 local PLACE_INFO = {
-    [124848751642883] = {Name = "DUELS 1v1", Kind = "1v1"},
-    [135856908115931] = {Name = "DUELS Murderers VS Sheriffs", Kind = "team"},
+    [135856908115931] = {Name = "DUELS Murderers VS Sheriffs", Kind = "team", Mode = "Root"},
+    [124848751642883] = {Name = "DUELS 1v1", Kind = "1v1", Mode = "1v1"},
+    [92876937625630] = {Name = "DUELS 2v2", Kind = "team", Mode = "2v2"},
+    [101617670515690] = {Name = "DUELS 3v3", Kind = "team", Mode = "3v3"},
+    [123627218337521] = {Name = "DUELS 4v4", Kind = "team", Mode = "4v4"},
+    [114176825419426] = {Name = "DUELS FFA", Kind = "ffa", Mode = "FFA"},
+    [74084441161738] = {Name = "DUELS Pro Servers", Kind = "dynamic", Mode = "Pro"},
 }
-local placeInfo = PLACE_INFO[game.PlaceId] or {Name = "DUELS / Unknown Place", Kind = "dynamic"}
+
+local currentPlaceId = tonumber(game.PlaceId) or 0
+local currentUniverseId = tonumber(game.GameId) or 0
+local placeInfo = PLACE_INFO[currentPlaceId]
+if not placeInfo then
+    if currentUniverseId == DUELS_UNIVERSE_ID then
+        -- Future/new DUELS subplaces automatically inherit the same replicated
+        -- Game / Team / Died / Spectating integration without needing a new build.
+        placeInfo = {
+            Name = "DUELS Subplace " .. tostring(currentPlaceId),
+            Kind = "dynamic",
+            Mode = "Subplace",
+            FutureSubplace = true,
+        }
+    else
+        placeInfo = {Name = "DUELS / Unknown Place", Kind = "dynamic", Mode = "Unknown"}
+    end
+end
 
 --// Configuration
 local Config = {
@@ -223,6 +248,12 @@ local function sameTeam(a, b)
     return teamA ~= nil and teamB ~= nil and teamA == teamB
 end
 
+local function shouldFilterTeammates()
+    -- FFA must treat every other player in the same Game as hostile even if the
+    -- experience happens to leave a shared/default Team attribute on players.
+    return Config.ESP.TeamAware and placeInfo.Kind ~= "ffa"
+end
+
 local function isRelevantPlayer(player)
     if not player or player == LocalPlayer then return false end
     local observedGame = getObservedGame()
@@ -240,7 +271,7 @@ local function isEnemy(player)
 
     -- DUELS team modes replicate TeamRed / TeamBlue through the Team attribute.
     -- In 1v1 / non-team modes Team may be absent, so the other player is hostile.
-    if Config.ESP.TeamAware and sameTeam(LocalPlayer, player) then
+    if shouldFilterTeammates() and sameTeam(LocalPlayer, player) then
         return false
     end
     return true
@@ -258,7 +289,7 @@ local function iterateRelevantPlayers(callback)
     for _, player in ipairs(Players:GetPlayers()) do
         if isRelevantPlayer(player) then
             -- In a live match ESP should not draw teammates when team-aware mode is on.
-            if getLocalGame() == nil or not Config.ESP.TeamAware or not sameTeam(LocalPlayer, player) then
+            if getLocalGame() == nil or not shouldFilterTeammates() or not sameTeam(LocalPlayer, player) then
                 callback(player)
             end
         end
@@ -1202,7 +1233,8 @@ end
 
 CombatTab:CreateSection("DUELS Integration")
 local RuntimeStatusLabel = CombatTab:CreateLabel("Starting...")
-CombatTab:CreateLabel("Uses DUELS Game / Team / Died attributes from the inspected client state.")
+CombatTab:CreateLabel("Universe-aware: Root, 1v1, 2v2, 3v3, 4v4, FFA, Pro and future DUELS subplaces.")
+CombatTab:CreateLabel("Uses replicated Game / Team / Died / Spectating state; FFA automatically disables teammate filtering.")
 
 CombatTab:CreateSection("Auto Aim")
 UIControls.AimEnabled = CombatTab:CreateToggle({
@@ -1566,8 +1598,8 @@ end)
 
 PuckUI:Notify({
     Title = "PuckAFK · DUELS",
-    Content = "Loaded " .. placeInfo.Name .. " • v1.0.13 manual only",
+    Content = "Loaded " .. placeInfo.Name .. " • v1.0.14 manual subplace support",
     Duration = 3,
 })
 
-print("[PuckAFK DUELS] v1.0.13 loaded successfully — auto-execute disabled")
+print("[PuckAFK DUELS] v1.0.14 loaded successfully — manual only, subplaces supported")
